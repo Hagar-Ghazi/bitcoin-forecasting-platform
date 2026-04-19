@@ -1,0 +1,17 @@
+# Environment
+venv/
+.env
+
+# Data files (too large for GitHub)
+*.csv
+assets/*.csv
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+
+# OS files
+.DS_Store
+Thumbs.db
