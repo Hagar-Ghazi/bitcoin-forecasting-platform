@@ -215,6 +215,12 @@ def plot_backtest_performance(
     historical_df : ds, y
     backtest_df   : ds, actual, predicted
     """
+    # Ensure datetime dtype on both dataframes
+    historical_df = historical_df.copy()
+    backtest_df   = backtest_df.copy()
+    historical_df["ds"] = pd.to_datetime(historical_df["ds"])
+    backtest_df["ds"]   = pd.to_datetime(backtest_df["ds"])
+
     fig = go.Figure()
 
     # Full history (faded)
@@ -225,6 +231,8 @@ def plot_backtest_performance(
         line      = dict(color="rgba(247,147,26,0.18)", width=1),
         hoverinfo = "skip",
     ))
+
+    
 
     # Highlight the backtest window as a shaded rect
     bt_start = backtest_df["ds"].min()
@@ -284,6 +292,10 @@ def plot_residuals(
 
     backtest_df : ds, actual, predicted
     """
+    # Ensure datetime dtype — prevents x-axis showing Unix epoch (1970)
+    backtest_df = backtest_df.copy()
+    backtest_df["ds"] = pd.to_datetime(backtest_df["ds"])
+
     residuals = backtest_df["actual"] - backtest_df["predicted"]
 
     fig = make_subplots(
