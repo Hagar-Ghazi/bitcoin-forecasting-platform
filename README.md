@@ -16,17 +16,23 @@
 
 ---
 
-> **A production-grade Bitcoin price forecasting system** featuring four independent ML/DL models  
-> a dark trading-terminal Streamlit UI with animated ticker tape and a full evaluation pipeline  
-> including walk-forward backtesting, residual analysis and feature importance ranking
+### 🌐 Live Demo
+
+[![Live App](https://img.shields.io/badge/🚀%20Live%20Demo-Open%20Application-F7931A?style=for-the-badge&logoColor=white)](https://bitcoin-forecasting-platform-qrappgjubmg3vqhn7khxay.streamlit.app/)
+
+**No installation required · Runs entirely in your browser · Globally accessible**
+
+---
+
+> **A production-grade Bitcoin price forecasting system** featuring four independent ML/DL models,  
+> a dark trading-terminal Streamlit UI with animated ticker tape, and a full evaluation pipeline  
+> including walk-forward backtesting, residual analysis, and feature importance ranking.
 
 ---
 
 [🚀 Quick Start](#-quick-start) · [🏗️ Architecture](#%EF%B8%8F-architecture--design-philosophy) · [📁 Project Structure](#-project-structure) · [🧠 Models](#-models--forecasting-strategies) · [▶️ Running Files](#%EF%B8%8F-running-every-file) · [📊 Evaluation](#-evaluation-metrics) · [📦 Dependencies](#-dependencies)
 
 </div>
-
----
 
 ## Preview
 
