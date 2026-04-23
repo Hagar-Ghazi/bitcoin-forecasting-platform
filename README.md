@@ -31,19 +31,19 @@
 ## Preview
 
 ```
-┌──────────────────────────────────────────────────────────────────────────────────┐
-│  ●  BTC/USD $67,412 ▲2.41%  ·  ETH/USD $3,521 ▲1.18%  ·  SOL/USD $187 ▲3.07%  │  ← Animated ticker
+┌──────────────────────────────────────────────────────────────────────────────────
+│  ●  BTC/USD $67,412 ▲2.41%  ·  ETH/USD $3,521 ▲1.18%  ·  SOL/USD $187 ▲3.07%    │  ← Animated ticker
 ├───────────────┬─────────────────────────────────────────────────────────────────┤
 │               │  ₿ BTC Forecasting Portal              v2.0 · Phase 4           │
 │  CONTROL      │  Time-Series Analysis · Prophet · XGBoost · N-BEATS · Plotly    │
 │  PANEL        ├─────────────────────────────────────────────────────────────────┤
-│               │  MAE $681  │  RMSE $944  │  MAPE 1.52%  │  Dir 66.1%  │  $46K  │
+│               │  MAE $681  │  RMSE $944  │  MAPE 1.52%  │  Dir 66.1%  │  $46K   │
 │  ① Data       ├─────────────────────────────────────────────────────────────────┤
-│  ② Model      │  📈 Forecast  │  🔁 Back-test  │  📊 Residuals  │  🧠 Insights │
+│  ② Model      │  📈 Forecast  │  🔁 Back-test  │  📊 Residuals  │  🧠 Insights│
 │  ③ Forecast   ├─────────────────────────────────────────────────────────────────┤
 │  ④ Overlays   │                                                                 │
 │               │              BTC Price Forecast Chart (Plotly)                  │
-│  ⚡ Generate  │                                                                 │
+│ ⚡ Generate                                                                     
 └───────────────┴─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -55,7 +55,7 @@
 |---|---|
 | **4 Forecasting Models** | Prophet (Optimised), XGBoost Recursive, XGBoost Direct Multi-Step, N-BEATS (PyTorch) |
 | **Live Ticker Tape** | Animated scrolling crypto prices bar (BTC, ETH, SOL, XRP and more) |
-| **Walk-Forward Backtesting** | Honest out-of-sample evaluation — no data leakage |
+| **Walk-Forward Backtesting** | Honest out-of-sample evaluation and no data leakage |
 | **Full Residual Analysis** | Error distribution, temporal residual plots, bias & spread metrics |
 | **Feature Engineering** | 30+ engineered features: lags, rolling stats, RSI, MACD, Bollinger Bands |
 | **Confidence Intervals** | Per-step uncertainty bands that correctly widen for longer horizons |
@@ -68,25 +68,25 @@
 
 ```
 ┌─────────────────── BTC FORECASTING PORTAL ───────────────────┐
-│                                                               │
-│   CSV Upload ──► data_loader.py ──► Validated DataFrame       │
-│                       │                                       │
+│                                                              │
+│   CSV Upload ──► data_loader.py ──► Validated DataFrame      │
+│                       │                                      │
 │              ┌────────┼────────┐──────────────┐              │
 │              ▼        ▼        ▼              ▼              │
 │         Prophet   XGBoost  XGBoost        N-BEATS            │
 │        (Optimised)(Recur.) (Direct)      (PyTorch)           │
 │              │        │        │              │              │
 │              └────────┴────────┴──────────────┘              │
-│                            │                                  │
-│                     evaluation.py                             │
-│                    (MAE, RMSE, MAPE)                          │
-│                            │                                  │
-│                    visualizations.py                          │
-│                   (Plotly dark charts)                        │
-│                            │                                  │
-│                         app.py                                │
-│              (Streamlit UI — dark terminal)                    │
-└───────────────────────────────────────────────────────────────┘
+│                            │                                 │
+│                     evaluation.py                            │
+│                    (MAE, RMSE, MAPE)                         │
+│                            │                                 │
+│                    visualizations.py                         │
+│                   (Plotly dark charts)                       │
+│                            │                                 │
+│                         app.py                               │
+│              (Streamlit UI — dark terminal)                  │
+└───────────────────────────────────────────────────────────────
 ```
 
 **Design principles:**
@@ -334,7 +334,7 @@ assets/
 | `Volume` | `float` | *(optional)* Trade volume — enables extra regressors |
 
 
-> 📥 **Download dataset:** [BTC-USD Historical Data on Kaggle](https://www.kaggle.com/datasets/cryptocurrencyprices/btc-usd-historical-prices)
+> 📥 **Download dataset:** [BTC-USD Historical Data on Kaggle](https://www.kaggle.com/datasets/mczielinski/bitcoin-historical-data)
 
 > 📥 **Download dataset:** [Cryptocurrency Historical Prices Data on Kaggle](https://www.kaggle.com/datasets/sudalairajkumar/cryptocurrencypricehistory/data?select=coin_Ethereum.csv)
 
@@ -654,7 +654,7 @@ This project expects a **Kaggle-format BTC-USD historical CSV**
 
 **Built with ❤️ and ₿ · Dark terminal aesthetic · IBM Plex Mono**
 
-*This project is for educational purposes only. Nothing here constitutes financial advice.*
+*This project is for educational purposes*
 
 [![Made with Python](https://img.shields.io/badge/Made%20with-Python-3776AB?style=flat-square&logo=python)](https://python.org)
 [![Powered by Streamlit](https://img.shields.io/badge/Powered%20by-Streamlit-FF4B4B?style=flat-square&logo=streamlit)](https://streamlit.io)
