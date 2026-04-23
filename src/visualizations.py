@@ -215,12 +215,6 @@ def plot_backtest_performance(
     historical_df : ds, y
     backtest_df   : ds, actual, predicted
     """
-    # Ensure datetime dtype on both dataframes
-    historical_df = historical_df.copy()
-    backtest_df   = backtest_df.copy()
-    historical_df["ds"] = pd.to_datetime(historical_df["ds"])
-    backtest_df["ds"]   = pd.to_datetime(backtest_df["ds"])
-
     fig = go.Figure()
 
     # Full history (faded)
@@ -231,8 +225,6 @@ def plot_backtest_performance(
         line      = dict(color="rgba(247,147,26,0.18)", width=1),
         hoverinfo = "skip",
     ))
-
-    
 
     # Highlight the backtest window as a shaded rect
     bt_start = backtest_df["ds"].min()
@@ -287,97 +279,157 @@ def plot_residuals(
 ) -> go.Figure:
     """
     Two-panel chart:
-      Left  — residuals over time (actual − predicted)
-      Right — residual distribution (histogram)
+      Left  — residuals over time (scatter + filled area + zero line)
+      Right — residual distribution (histogram + normal curve)
+
+    Uses string-formatted dates on the x-axis to guarantee Plotly never
+    misinterprets timestamps as Unix epoch (1970 bug with Prophet output).
 
     backtest_df : ds, actual, predicted
     """
-    # Ensure datetime dtype — prevents x-axis showing Unix epoch (1970)
-    backtest_df = backtest_df.copy()
-    backtest_df["ds"] = pd.to_datetime(backtest_df["ds"])
-
-    residuals = backtest_df["actual"] - backtest_df["predicted"]
+    # ── Force clean datetime then convert to ISO strings for Plotly ──────
+    bt = backtest_df.copy()
+    bt["ds"]        = pd.to_datetime(bt["ds"]).dt.strftime("%Y-%m-%d")
+    residuals       = bt["actual"] - bt["predicted"]
+    mean_res        = float(residuals.mean())
+    colors          = [_GREEN if r >= 0 else _RED for r in residuals]
 
     fig = make_subplots(
         rows=1, cols=2,
         subplot_titles=["Residuals Over Time", "Error Distribution"],
         column_widths=[0.65, 0.35],
+        horizontal_spacing=0.08,
     )
 
-    # Left: residuals over time 
-    colors = [_GREEN if r >= 0 else _RED for r in residuals]
-
-    fig.add_trace(go.Bar(
-        x         = backtest_df["ds"],
-        y         = residuals,
-        marker_color = colors,
-        name      = "Residual",
-        hovertemplate = "%{x|%Y-%m-%d}<br>Error: <b>$%{y:,.0f}</b><extra></extra>",
+    # ── Left panel: scatter markers coloured by sign ─────────────────────
+    # Positive residuals
+    pos_mask = residuals >= 0
+    fig.add_trace(go.Scatter(
+        x          = bt["ds"][pos_mask],
+        y          = residuals[pos_mask],
+        mode       = "markers",
+        marker     = dict(color=_GREEN, size=5, opacity=0.8),
+        name       = "Over-predicted",
+        hovertemplate = "%{x}<br>Error: <b>+$%{y:,.0f}</b><extra></extra>",
     ), row=1, col=1)
 
-    # Zero line
-    fig.add_hline(y=0, line_width=1, line_color="rgba(255,255,255,0.15)", row=1, col=1)
+    # Negative residuals
+    neg_mask = residuals < 0
+    fig.add_trace(go.Scatter(
+        x          = bt["ds"][neg_mask],
+        y          = residuals[neg_mask],
+        mode       = "markers",
+        marker     = dict(color=_RED, size=5, opacity=0.8),
+        name       = "Under-predicted",
+        hovertemplate = "%{x}<br>Error: <b>$%{y:,.0f}</b><extra></extra>",
+    ), row=1, col=1)
 
-    # Mean residual line
-    mean_res = float(residuals.mean())
-    fig.add_shape(
-        type="line", x0=0, x1=1, xref="paper",
-        y0=mean_res, y1=mean_res, yref="y",
-        line=dict(color=_ORANGE, width=1, dash="dash"),
+    # Connecting line through all residuals (thin, dimmed)
+    fig.add_trace(go.Scatter(
+        x          = bt["ds"],
+        y          = residuals,
+        mode       = "lines",
+        line       = dict(color="rgba(255,255,255,0.10)", width=1),
+        showlegend = False,
+        hoverinfo  = "skip",
+    ), row=1, col=1)
+
+    # Zero baseline
+    fig.add_hline(
+        y=0, line_width=1,
+        line_color="rgba(255,255,255,0.20)",
+        row=1, col=1,
+    )
+
+    # Mean residual annotation
+    fig.add_hline(
+        y=mean_res, line_width=1,
+        line_color=_ORANGE, line_dash="dash",
         row=1, col=1,
     )
     fig.add_annotation(
-        x=0.01, xref="paper", y=mean_res, yref="y",
-        text=f"Mean ${mean_res:,.0f}",
+        x=0.02, xref="x domain",
+        y=mean_res, yref="y",
+        text=f"Mean  ${mean_res:,.0f}",
         showarrow=False,
         font=dict(color=_ORANGE, size=10),
         xanchor="left",
+        bgcolor="rgba(10,11,13,0.7)",
         row=1, col=1,
     )
 
-    # Right: histogram 
+    # ── Right panel: histogram + normal reference curve ───────────────────
     fig.add_trace(go.Histogram(
         x         = residuals,
         nbinsx    = 20,
-        marker    = dict(color=_ORANGE, opacity=0.7,
-                         line=dict(color=_BG, width=0.5)),
+        marker    = dict(
+            color = _ORANGE,
+            opacity = 0.75,
+            line  = dict(color=_BG, width=0.5),
+        ),
         name      = "Distribution",
-        hovertemplate = "Error range: $%{x:,.0f}<br>Count: %{y}<extra></extra>",
+        hovertemplate = "Error ~$%{x:,.0f}<br>Count: %{y}<extra></extra>",
     ), row=1, col=2)
 
-    # Normal-distribution reference curve
-    x_range = np.linspace(residuals.min(), residuals.max(), 100)
-    mu, sigma = float(residuals.mean()), float(residuals.std())
-    pdf = (np.exp(-(x_range - mu)**2 / (2 * sigma**2)) /
-           (sigma * np.sqrt(2 * np.pi)))
-    # Scale to histogram counts
-    bin_width = (residuals.max() - residuals.min()) / 20
-    pdf_scaled = pdf * len(residuals) * bin_width
+    x_range   = np.linspace(float(residuals.min()), float(residuals.max()), 120)
+    mu, sigma = mean_res, float(residuals.std())
+    if sigma > 0:
+        pdf       = np.exp(-(x_range - mu) ** 2 / (2 * sigma ** 2)) / (sigma * np.sqrt(2 * np.pi))
+        bin_width = (float(residuals.max()) - float(residuals.min())) / 20
+        pdf_scaled = pdf * len(residuals) * bin_width
+        fig.add_trace(go.Scatter(
+            x    = x_range,
+            y    = pdf_scaled,
+            mode = "lines",
+            line = dict(color=_GREEN, width=1.5, dash="dot"),
+            name = "Normal ref.",
+        ), row=1, col=2)
 
-    fig.add_trace(go.Scatter(
-        x     = x_range,
-        y     = pdf_scaled,
-        mode  = "lines",
-        line  = dict(color=_GREEN, width=1.5, dash="dot"),
-        name  = "Normal ref.",
-    ), row=1, col=2)
-
-    # Layout 
+    # ── Layout ────────────────────────────────────────────────────────────
     fig.update_layout(
         paper_bgcolor = _BG,
         plot_bgcolor  = _BG,
         font          = dict(family=_MONO, color=_TEXT_MED, size=11),
-        height        = 400,
-        margin        = dict(l=60, r=30, t=55, b=50),
-        showlegend    = False,
-        title         = dict(
-            text=f"<b>Residual Analysis</b> — {model_name}",
-            font=dict(size=13, color=_TEXT_MAIN), x=0,
+        height        = 420,
+        margin        = dict(l=60, r=30, t=55, b=60),
+        legend        = dict(
+            bgcolor     = "rgba(10,11,13,0.85)",
+            bordercolor = _GREY_LINE,
+            borderwidth = 1,
+            font        = dict(size=10),
+            orientation = "h",
+            y           = -0.18,
+        ),
+        title = dict(
+            text = f"<b>Residual Analysis</b> — {model_name}",
+            font = dict(size=13, color=_TEXT_MAIN),
+            x    = 0,
         ),
     )
-    fig.update_xaxes(gridcolor=_GREY_LINE, zeroline=False)
-    fig.update_yaxes(gridcolor=_GREY_LINE, zeroline=False)
-    fig.update_yaxes(tickprefix="$", tickformat=",.0f", col=1)
+
+    # x-axis: left panel uses category (string dates) → correct tick spacing
+    fig.update_xaxes(
+        gridcolor  = _GREY_LINE,
+        zeroline   = False,
+        tickangle  = -35,
+        nticks     = 8,
+        row=1, col=1,
+    )
+    fig.update_xaxes(
+        gridcolor  = _GREY_LINE,
+        zeroline   = False,
+        tickprefix = "$",
+        tickformat = ",.0f",
+        row=1, col=2,
+    )
+    fig.update_yaxes(
+        gridcolor  = _GREY_LINE,
+        zeroline   = False,
+        tickprefix = "$",
+        tickformat = ",.0f",
+        row=1, col=1,
+    )
+    fig.update_yaxes(gridcolor=_GREY_LINE, zeroline=False, row=1, col=2)
     fig.update_annotations(font_size=11, font_color=_TEXT_MED)
 
     return fig
